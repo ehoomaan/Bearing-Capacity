@@ -20,7 +20,7 @@ with st.sidebar:
     unit_system = st.selectbox("Unit system", ["SI", "USCS"], index=0)
     design_framework = st.selectbox("Design framework", ["ASD", "LRFD"], index=0)
 
-col1, col2 = st.columns([1.25, 0.95])
+col1, col2 = st.columns([1.15, 1.15])
 
 with col1:
     with st.expander("Project Information", expanded=False):
