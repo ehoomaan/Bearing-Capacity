@@ -1,92 +1,75 @@
-import math
-
-import numpy as np
 import pandas as pd
 
-from modules.soil_profile import (
-    compute_effective_surcharge_at_base,
-    get_unit_labels,
-    iterate_averaged_parameters,
-)
 
-
-def terzaghi_factors(phi_deg: float) -> tuple[float, float, float]:
-    phi_rad = math.radians(phi_deg)
-
-    if abs(phi_deg) < 1e-10:
-        Nq = 1.0
-        Nc = 5.7
-        Ngamma = 0.0
-        return Nc, Nq, Ngamma
-
-    a_phi = math.exp(math.pi * (0.75 - phi_deg / 360.0) * math.tan(phi_rad))
-    angle_rad = math.radians(45.0 + phi_deg / 2.0)
-    Nq = (a_phi ** 2) / (2.0 * (math.cos(angle_rad) ** 2))
-    Nc = (Nq - 1.0) / math.tan(phi_rad)
-
-    sin_4phi = math.sin(math.radians(4.0 * phi_deg))
-    denominator = 1.0 + 0.4 * sin_4phi
-    Ngamma = 2.0 * (Nq + 1.0) * math.tan(phi_rad) / denominator
-
-    return Nc, Nq, Ngamma
-
-
-def calculate_terzaghi_strip_results(
+def validate_inputs(
     soil_df: pd.DataFrame,
-    widths: np.ndarray,
+    footing_shape: str,
     df_depth: float,
-    groundwater_depth: float,
-    wedge_method: str,
+    b_min: float | None,
+    b_max: float | None,
+    b_inc: float | None,
+    length_l: float | None,
+    r_min: float | None,
+    r_max: float | None,
+    r_inc: float | None,
     design_framework: str,
     fs_value: float | None,
     phi_r_value: float | None,
-    unit_system: str,
-) -> pd.DataFrame:
-    units = get_unit_labels(unit_system)
-    gamma_w = units["gamma_w"]
-    results = []
+    selected_methods: list[str],
+) -> list[str]:
+    errors = []
 
-    q_eff = compute_effective_surcharge_at_base(
-        soil_df=soil_df,
-        df_depth=df_depth,
-        groundwater_depth=groundwater_depth,
-        gamma_w=gamma_w,
-    )
+    if soil_df.empty:
+        errors.append("At least one valid soil layer is required.")
 
-    for B in widths:
-        c_av, phi_av_deg, gamma_av, avg_depth, n_iter = iterate_averaged_parameters(
-            soil_df=soil_df,
-            B=float(B),
-            df_depth=df_depth,
-            groundwater_depth=groundwater_depth,
-            gamma_w=gamma_w,
-            wedge_method=wedge_method,
-        )
+    if df_depth < 0:
+        errors.append("Embedment depth Df must be greater than or equal to zero.")
 
-        Nc, Nq, Ngamma = terzaghi_factors(phi_av_deg)
+    if len(selected_methods) == 0:
+        errors.append("Select at least one bearing-capacity method.")
 
-        q_net_ult = c_av * Nc + q_eff * Nq + 0.5 * gamma_av * float(B) * Ngamma
+    if design_framework == "ASD":
+        if fs_value is None or fs_value <= 0:
+            errors.append("Factor of safety must be greater than zero for ASD.")
+    else:
+        if phi_r_value is None or phi_r_value <= 0:
+            errors.append("Resistance factor must be greater than zero for LRFD.")
 
-        if design_framework == "ASD":
-            q_design = q_net_ult / float(fs_value)
+    if footing_shape in ["Strip", "Rectangular"]:
+        if b_min is None or b_max is None or b_inc is None:
+            errors.append("Width range inputs are required.")
         else:
-            q_design = float(phi_r_value) * q_net_ult
+            if b_min <= 0 or b_max <= 0 or b_inc <= 0:
+                errors.append("B_min, B_max, and B_increment must be greater than zero.")
+            if b_max < b_min:
+                errors.append("B_max must be greater than or equal to B_min.")
 
-        results.append(
-            {
-                f"B ({units['length']})": float(B),
-                f"q' ({units['pressure']})": q_eff,
-                f"c_av ({units['cohesion']})": c_av,
-                "phi_av (deg)": phi_av_deg,
-                f"gamma'_av ({units['unit_weight']})": gamma_av,
-                f"H ({units['length']})": avg_depth,
-                "Iterations": n_iter,
-                "Nc": Nc,
-                "Nq": Nq,
-                "Ngamma": Ngamma,
-                f"q_net_ult ({units['pressure']})": q_net_ult,
-                f"q_design ({units['pressure']})": q_design,
-            }
-        )
+    if footing_shape == "Rectangular":
+        if length_l is None or length_l <= 0:
+            errors.append("Length L must be greater than zero for rectangular footing.")
+        elif b_max is not None and length_l < b_max:
+            errors.append("For rectangular footing, L should be greater than or equal to the largest B value.")
 
-    return pd.DataFrame(results)
+    if footing_shape == "Circular":
+        if r_min is None or r_max is None or r_inc is None:
+            errors.append("Radius range inputs are required.")
+        else:
+            if r_min <= 0 or r_max <= 0 or r_inc <= 0:
+                errors.append("R_min, R_max, and R_increment must be greater than zero.")
+            if r_max < r_min:
+                errors.append("R_max must be greater than or equal to R_min.")
+
+    if not soil_df.empty:
+        for _, row in soil_df.iterrows():
+            if row["Thickness"] <= 0:
+                errors.append(f"Layer {int(row['Layer No.'])}: Thickness must be greater than zero.")
+            if row["Gamma moist"] <= 0:
+                errors.append(f"Layer {int(row['Layer No.'])}: Unit weight must be greater than zero.")
+            if row["Gamma sat"] <= 0:
+                errors.append(f"Layer {int(row['Layer No.'])}: Saturated unit weight must be greater than zero.")
+            if row["Phi (deg)"] < 0:
+                errors.append(f"Layer {int(row['Layer No.'])}: Phi must be greater than or equal to zero.")
+            if row["c"] < 0:
+                errors.append(f"Layer {int(row['Layer No.'])}: Cohesion must be greater than or equal to zero.")
+
+    return errors
