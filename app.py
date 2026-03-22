@@ -50,7 +50,7 @@ def plot_results(results_df, footing_shape: str, design_framework: str, unit_sys
     x_col, y_col = get_plot_columns(results_df, footing_shape, unit_system)
     x_label, y_label = get_axis_labels(footing_shape, design_framework, unit_system)
 
-    fig, ax = plt.subplots(figsize=(3, 2))
+    fig, ax = plt.subplots(figsize=(5, 4))
     ax.plot(results_df[x_col], results_df[y_col], marker="o")
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
@@ -214,7 +214,9 @@ if run_analysis:
                     design_framework=design_framework,
                     unit_system=unit_system,
                 )
-                st.pyplot(fig)                
+                plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+                with plot_col2:
+                    st.pyplot(fig)                
 
             elif footing_shape == "Square":
                 widths = build_width_array(b_min, b_max, b_inc)
@@ -238,7 +240,9 @@ if run_analysis:
                     design_framework=design_framework,
                     unit_system=unit_system,
                 )
-                st.pyplot(fig)
+                plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+                with plot_col2:
+                    st.pyplot(fig)
 
             elif footing_shape == "Rectangular":
                 widths = build_width_array(b_min, b_max, b_inc)
@@ -263,7 +267,9 @@ if run_analysis:
                     design_framework=design_framework,
                         unit_system=unit_system,
                 )
-                st.pyplot(fig)
+                plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+                with plot_col2:
+                    st.pyplot(fig)
 
             elif footing_shape == "Circular":
                 radii = build_width_array(r_min, r_max, r_inc)
@@ -287,6 +293,8 @@ if run_analysis:
                     design_framework=design_framework,
                         unit_system=unit_system,
                 )
-                st.pyplot(fig)
+                plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+                with plot_col2:
+                    st.pyplot(fig)
             else:
                 st.warning("This step currently supports only the Terzaghi method.")
