@@ -242,7 +242,7 @@ if run_analysis:
                     design_framework=design_framework,
                     unit_system=unit_system,
                 )
-                plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+                plot_col1, plot_col2, plot_col3 = st.columns([1, 1.5, 1])
                 with plot_col2:
                     st.pyplot(fig)
 
@@ -269,7 +269,7 @@ if run_analysis:
                     design_framework=design_framework,
                         unit_system=unit_system,
                 )
-                plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+                plot_col1, plot_col2, plot_col3 = st.columns([1, 1.5, 1])
                 with plot_col2:
                     st.pyplot(fig)
 
@@ -295,7 +295,7 @@ if run_analysis:
                     design_framework=design_framework,
                         unit_system=unit_system,
                 )
-                plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+                plot_col1, plot_col2, plot_col3 = st.columns([1, 1.5, 1])
                 with plot_col2:
                     st.pyplot(fig)
             else:
