@@ -11,12 +11,14 @@ from modules.soil_profile import (
 from modules.terzaghi import calculate_terzaghi_strip_results
 from modules.validation import validate_inputs
 
+
 def get_static_geometry_image() -> str | None:
     image_path = Path("assets/foundation_geometry.png")
     if image_path.exists():
         return str(image_path)
     return None
-    
+
+
 st.set_page_config(page_title="Bearing Capacity App", layout="wide")
 
 st.title("Bearing Capacity App")
@@ -52,7 +54,7 @@ with main_col1:
         )
 
         cleaned_soil_df = clean_soil_df(soil_editor_df, unit_system)
-    
+
     st.markdown("**Geometry Sketch**")
     image_path = get_static_geometry_image()
     if image_path:
@@ -61,11 +63,14 @@ with main_col1:
         st.info("Geometry image not found.")
 
 with main_col2:
-    right_col1, right_col2 = st.columns([1.0, 1.05])
+    right_col1, right_col2 = st.columns([1.15, 0.95])
 
     with right_col1:
         with st.expander("Footing Properties", expanded=True):
-            footing_shape = st.selectbox("Footing shape", ["Strip", "Rectangular", "Circular"])
+            footing_shape = st.selectbox(
+                "Footing shape",
+                ["Strip", "Square", "Rectangular", "Circular"],
+            )
 
             df_depth = st.number_input("Embedment depth, Df", min_value=0.0, value=1.5, step=0.1)
             base_angle = st.number_input("Base inclination angle (deg)", min_value=0.0, value=0.0, step=0.5)
@@ -73,16 +78,21 @@ with main_col2:
             load_angle = st.number_input("Load inclination angle (deg)", min_value=0.0, value=0.0, step=0.5)
 
             b_min = b_max = b_inc = None
-            length_l = None
+            length_to_width_ratio = None
             r_min = r_max = r_inc = None
 
-            if footing_shape in ["Strip", "Rectangular"]:
+            if footing_shape in ["Strip", "Square", "Rectangular"]:
                 b_min = st.number_input("B_min", min_value=0.01, value=1.0, step=0.1)
                 b_max = st.number_input("B_max", min_value=0.01, value=3.0, step=0.1)
                 b_inc = st.number_input("B_increment", min_value=0.01, value=0.5, step=0.1)
 
             if footing_shape == "Rectangular":
-                length_l = st.number_input("L", min_value=0.01, value=3.0, step=0.1)
+                length_to_width_ratio = st.number_input(
+                    "L/B ratio",
+                    min_value=1.01,
+                    value=2.0,
+                    step=0.1,
+                )
 
             if footing_shape == "Circular":
                 r_min = st.number_input("R_min", min_value=0.01, value=0.5, step=0.1)
@@ -117,7 +127,7 @@ if run_analysis:
         b_min=b_min,
         b_max=b_max,
         b_inc=b_inc,
-        length_l=length_l,
+        length_to_width_ratio=length_to_width_ratio,
         r_min=r_min,
         r_max=r_max,
         r_inc=r_inc,
@@ -152,4 +162,4 @@ if run_analysis:
             st.dataframe(results_df, use_container_width=True)
             st.info("This step displays the Terzaghi strip-footing results table only. Plotting will be added next.")
         else:
-            st.warning("This step supports only the Terzaghi method with strip footing.")
+            st.warning("This step currently supports only the Terzaghi method with strip footing.")
