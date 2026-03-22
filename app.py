@@ -51,7 +51,7 @@ with main_col1:
     st.info("Reserved area for footing geometry image.")
 
 with main_col2:
-    right_col1, right_col2 = st.columns([1.15, 0.95])
+    right_col1, right_col2 = st.columns([1.05, 1.0])
 
     with right_col1:
         with st.expander("Footing Properties", expanded=True):
