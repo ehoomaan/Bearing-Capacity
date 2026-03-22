@@ -8,9 +8,12 @@ from modules.soil_profile import (
     clean_soil_df,
     default_soil_df,
 )
-from modules.terzaghi import calculate_terzaghi_strip_results
+from modules.terzaghi import (
+    calculate_terzaghi_rectangular_results,
+    calculate_terzaghi_square_results,
+    calculate_terzaghi_strip_results,
+)
 from modules.validation import validate_inputs
-
 
 def get_static_geometry_image() -> str | None:
     image_path = Path("assets/foundation_geometry.png")
@@ -144,22 +147,63 @@ if run_analysis:
     else:
         st.success("Input collection is working correctly.")
 
-        if footing_shape == "Strip" and selected_methods == ["Terzaghi"]:
-            widths = build_width_array(b_min, b_max, b_inc)
-            results_df = calculate_terzaghi_strip_results(
-                soil_df=cleaned_soil_df,
-                widths=widths,
-                df_depth=df_depth,
-                groundwater_depth=groundwater_depth,
-                wedge_method=wedge_method,
-                design_framework=design_framework,
-                fs_value=fs_value,
-                phi_r_value=phi_r_value,
-                unit_system=unit_system,
-            )
+        if selected_methods == ["Terzaghi"]:
+            if footing_shape == "Strip":
+                widths = build_width_array(b_min, b_max, b_inc)
+                results_df = calculate_terzaghi_strip_results(
+                    soil_df=cleaned_soil_df,
+                    widths=widths,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
+                    design_framework=design_framework,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                )
 
-            st.subheader("Terzaghi Strip Footing Results")
-            st.dataframe(results_df, use_container_width=True)
-            st.info("This step displays the Terzaghi strip-footing results table only. Plotting will be added next.")
+                st.subheader("Terzaghi Strip Footing Results")
+                st.dataframe(results_df, use_container_width=True)
+                st.info("This step displays the Terzaghi strip-footing results table only. Plotting will be added next.")
+
+            elif footing_shape == "Square":
+                widths = build_width_array(b_min, b_max, b_inc)
+                results_df = calculate_terzaghi_square_results(
+                    soil_df=cleaned_soil_df,
+                    widths=widths,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
+                    design_framework=design_framework,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                )
+
+                st.subheader("Terzaghi Square Footing Results")
+                st.dataframe(results_df, use_container_width=True)
+                st.info("This step displays the Terzaghi square-footing results table only. Plotting will be added next.")
+
+            elif footing_shape == "Rectangular":
+                widths = build_width_array(b_min, b_max, b_inc)
+                results_df = calculate_terzaghi_rectangular_results(
+                    soil_df=cleaned_soil_df,
+                    widths=widths,
+                    length_to_width_ratio=length_to_width_ratio,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
+                    design_framework=design_framework,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                )
+
+                st.subheader("Terzaghi Rectangular Footing Results")
+                st.dataframe(results_df, use_container_width=True)
+                st.info("This step displays the Terzaghi rectangular-footing results table only. Plotting will be added next.")
+
+            else:
+                st.warning("Circular footing has not been connected yet in this step.")
         else:
-            st.warning("This step currently supports only the Terzaghi method with strip footing.")
+            st.warning("This step currently supports only the Terzaghi method.")
