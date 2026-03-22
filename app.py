@@ -203,7 +203,22 @@ if run_analysis:
                 st.dataframe(results_df, use_container_width=True)
                 st.info("This step displays the Terzaghi rectangular-footing results table only. Plotting will be added next.")
 
-            else:
-                st.warning("Circular footing has not been connected yet in this step.")
+            elif footing_shape == "Circular":
+                radii = build_width_array(r_min, r_max, r_inc)
+                results_df = calculate_terzaghi_circular_results(
+                    soil_df=cleaned_soil_df,
+                    radii=radii,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
+                    design_framework=design_framework,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                )
+
+                st.subheader("Terzaghi Circular Footing Results")
+                st.dataframe(results_df, use_container_width=True)
+                st.info("This step displays the Terzaghi circular-footing results table only. Plotting will be added next.")
         else:
             st.warning("This step currently supports only the Terzaghi method.")
