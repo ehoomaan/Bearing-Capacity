@@ -258,12 +258,12 @@ if run_analysis:
                 st.subheader("Terzaghi Rectangular Footing Results")
                 st.dataframe(results_df, use_container_width=True)
                 fig = plot_results(
-                results_df=results_df,
-                footing_shape=footing_shape,
-                design_framework=design_framework,
-                unit_system=unit_system,
-            )
-            st.pyplot(fig)
+                    results_df=results_df,
+                    footing_shape=footing_shape,
+                    design_framework=design_framework,
+                        unit_system=unit_system,
+                )
+                st.pyplot(fig)
 
             elif footing_shape == "Circular":
                 radii = build_width_array(r_min, r_max, r_inc)
@@ -282,11 +282,11 @@ if run_analysis:
                 st.subheader("Terzaghi Circular Footing Results")
                 st.dataframe(results_df, use_container_width=True)
                 fig = plot_results(
-                results_df=results_df,
-                footing_shape=footing_shape,
-                design_framework=design_framework,
-                unit_system=unit_system,
-            )
-            st.pyplot(fig)
+                    results_df=results_df,
+                    footing_shape=footing_shape,
+                    design_framework=design_framework,
+                        unit_system=unit_system,
+                )
+                st.pyplot(fig)
             else:
                 st.warning("This step currently supports only the Terzaghi method.")
