@@ -54,7 +54,7 @@ def plot_results(results_df, footing_shape: str, design_framework: str, unit_sys
     ax.plot(results_df[x_col], results_df[y_col], marker="o")
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    ax.set_title("Bearing Capacity vs Footing Size")
+    ax.set_title("Bearing Capacity vs Footing Size",fontsize=12)
     ax.grid(True)
 
     return fig
