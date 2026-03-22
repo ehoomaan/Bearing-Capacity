@@ -220,5 +220,5 @@ if run_analysis:
                 st.subheader("Terzaghi Circular Footing Results")
                 st.dataframe(results_df, use_container_width=True)
                 st.info("This step displays the Terzaghi circular-footing results table only. Plotting will be added next.")
-        else:
-            st.warning("This step currently supports only the Terzaghi method.")
+            else:
+                st.warning("This step currently supports only the Terzaghi method.")
