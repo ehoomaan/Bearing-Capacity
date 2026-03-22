@@ -20,9 +20,9 @@ with st.sidebar:
     unit_system = st.selectbox("Unit system", ["SI", "USCS"], index=0)
     design_framework = st.selectbox("Design framework", ["ASD", "LRFD"], index=0)
 
-col1, col2 = st.columns([1.15, 1.15])
+main_col1, main_col2 = st.columns([1.45, 1.0])
 
-with col1:
+with main_col1:
     with st.expander("Project Information", expanded=False):
         project_name = st.text_input("Project name")
         project_location = st.text_input("Project location")
@@ -47,11 +47,14 @@ with col1:
 
         cleaned_soil_df = clean_soil_df(soil_editor_df, unit_system)
 
-with col2:
-    with st.expander("Footing Properties", expanded=True):
-        foot_col1, foot_col2 = st.columns([1.35, 0.85])
+    st.markdown("**Geometry Sketch**")
+    st.info("Reserved area for footing geometry image.")
 
-        with foot_col1:
+with main_col2:
+    right_col1, right_col2 = st.columns([1.15, 0.95])
+
+    with right_col1:
+        with st.expander("Footing Properties", expanded=True):
             footing_shape = st.selectbox("Footing shape", ["Strip", "Rectangular", "Circular"])
 
             df_depth = st.number_input("Embedment depth, Df", min_value=0.0, value=1.5, step=0.1)
@@ -76,26 +79,23 @@ with col2:
                 r_max = st.number_input("R_max", min_value=0.01, value=1.5, step=0.1)
                 r_inc = st.number_input("R_increment", min_value=0.01, value=0.25, step=0.1)
 
-        with foot_col2:
-            st.markdown("**Geometry sketch**")
-            st.info("Reserved area for footing geometry image.")
+    with right_col2:
+        with st.expander("Analysis Options", expanded=True):
+            selected_methods = st.multiselect(
+                "Bearing-capacity method(s)",
+                ["Terzaghi", "Vesic", "Hansen", "Lyamin", "Loukidis and Salgado"],
+                default=["Terzaghi"],
+            )
 
-    with st.expander("Analysis Options", expanded=True):
-        selected_methods = st.multiselect(
-            "Bearing-capacity method(s)",
-            ["Terzaghi", "Vesic", "Hansen", "Lyamin", "Loukidis and Salgado"],
-            default=["Terzaghi"],
-        )
+            wedge_method = st.selectbox("Failure-wedge averaging method", ["Terzaghi", "Meyerhof"])
 
-        wedge_method = st.selectbox("Failure-wedge averaging method", ["Terzaghi", "Meyerhof"])
+            fs_value = None
+            phi_r_value = None
 
-        fs_value = None
-        phi_r_value = None
-
-        if design_framework == "ASD":
-            fs_value = st.number_input("Factor of safety", min_value=0.1, value=3.0, step=0.1)
-        else:
-            phi_r_value = st.number_input("Resistance factor", min_value=0.01, value=0.5, step=0.05)
+            if design_framework == "ASD":
+                fs_value = st.number_input("Factor of safety", min_value=0.1, value=3.0, step=0.1)
+            else:
+                phi_r_value = st.number_input("Resistance factor", min_value=0.01, value=0.5, step=0.05)
 
 run_analysis = st.button("Run Analysis", type="primary")
 
