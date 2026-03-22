@@ -279,3 +279,64 @@ def calculate_terzaghi_rectangular_results(
         )
 
     return pd.DataFrame(results)
+
+def calculate_terzaghi_circular_results(
+    soil_df: pd.DataFrame,
+    radii: np.ndarray,
+    df_depth: float,
+    groundwater_depth: float,
+    wedge_method: str,
+    design_framework: str,
+    fs_value: float | None,
+    phi_r_value: float | None,
+    unit_system: str,
+) -> pd.DataFrame:
+    units = get_unit_labels(unit_system)
+    results = []
+
+    for R in radii:
+        B = 2.0 * float(R)
+
+        vals = _get_common_terzaghi_values(
+            soil_df=soil_df,
+            B=B,
+            df_depth=df_depth,
+            groundwater_depth=groundwater_depth,
+            wedge_method=wedge_method,
+            unit_system=unit_system,
+        )
+
+        q_net_ult = (
+            1.3 * vals["c_av"] * vals["Nc"]
+            + vals["q_eff"] * vals["Nq"]
+            + 0.3 * vals["gamma_av"] * B * vals["Ngamma"]
+        )
+
+        q_design = _get_design_value(
+            q_net_ult=q_net_ult,
+            design_framework=design_framework,
+            fs_value=fs_value,
+            phi_r_value=phi_r_value,
+        )
+
+        results.append(
+            {
+                "Method": "Terzaghi",
+                "Footing Shape": "Circular",
+                f"R ({units['length']})": float(R),
+                f"B=2R ({units['length']})": B,
+                f"q' ({units['pressure']})": vals["q_eff"],
+                f"c_av ({units['cohesion']})": vals["c_av"],
+                "phi_av (deg)": vals["phi_av_deg"],
+                f"gamma'_av ({units['unit_weight']})": vals["gamma_av"],
+                f"H ({units['length']})": vals["avg_depth"],
+                "Iterations": vals["n_iter"],
+                "Nc": vals["Nc"],
+                "Nq": vals["Nq"],
+                "Ngamma": vals["Ngamma"],
+                f"q_net_ult ({units['pressure']})": q_net_ult,
+                f"q_design ({units['pressure']})": q_design,
+            }
+        )
+
+    return pd.DataFrame(results)
