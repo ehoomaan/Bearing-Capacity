@@ -50,7 +50,7 @@ def plot_results(results_df, footing_shape: str, design_framework: str, unit_sys
     x_col, y_col = get_plot_columns(results_df, footing_shape, unit_system)
     x_label, y_label = get_axis_labels(footing_shape, design_framework, unit_system)
 
-    fig, ax = plt.subplots(figsize=(5, 4))
+    fig, ax = plt.subplots(figsize=(4, 3))
     ax.plot(results_df[x_col], results_df[y_col], marker="o")
     ax.set_xlabel(x_label,fontsize=8)
     ax.set_ylabel(y_label,fontsize=8)
