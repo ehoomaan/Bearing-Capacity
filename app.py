@@ -52,14 +52,14 @@ with main_col1:
         )
 
         cleaned_soil_df = clean_soil_df(soil_editor_df, unit_system)
-
-    st.markdown("**Geometry Sketch**")
     
-    image_path = get_static_geometry_image()
-    if image_path:
-        st.image(image_path, use_container_width=True)
-    else:
-    st.info("Geometry image not found.")
+        st.markdown("**Geometry Sketch**")
+        
+        image_path = get_static_geometry_image()
+        if image_path:
+            st.image(image_path, use_container_width=True)
+        else:
+        st.info("Geometry image not found.")
 
 with main_col2:
     right_col1, right_col2 = st.columns([1.0, 1.05])
