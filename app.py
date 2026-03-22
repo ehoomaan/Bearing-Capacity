@@ -58,7 +58,7 @@ with main_col1:
     if image_path:
         st.image(image_path, use_container_width=True)
     else:
-    st.info("Geometry image not found.")
+        st.info("Geometry image not found.")
 
 with main_col2:
     right_col1, right_col2 = st.columns([1.0, 1.05])
