@@ -1,6 +1,6 @@
 from datetime import date
 from pathlib import Path
-
+import matplotlib.pyplot as plt
 import streamlit as st
 
 from modules.soil_profile import (
@@ -8,6 +8,7 @@ from modules.soil_profile import (
     clean_soil_df,
     default_soil_df,
 )
+
 from modules.terzaghi import (
     calculate_terzaghi_rectangular_results,
     calculate_terzaghi_square_results,
@@ -15,6 +16,48 @@ from modules.terzaghi import (
     calculate_terzaghi_circular_results,
 )
 from modules.validation import validate_inputs
+def get_plot_columns(results_df, footing_shape: str, unit_system: str) -> tuple[str, str]:
+    length_unit = "m" if unit_system == "SI" else "ft"
+    pressure_unit = "kPa" if unit_system == "SI" else "psf"
+
+    if footing_shape == "Circular":
+        x_col = f"R ({length_unit})"
+    else:
+        x_col = f"B ({length_unit})"
+
+    y_col = f"q_design ({pressure_unit})"
+    return x_col, y_col
+
+
+def get_axis_labels(footing_shape: str, design_framework: str, unit_system: str) -> tuple[str, str]:
+    length_unit = "m" if unit_system == "SI" else "ft"
+    pressure_unit = "kPa" if unit_system == "SI" else "psf"
+
+    if footing_shape == "Circular":
+        x_label = f"Footing Radius, R ({length_unit})"
+    else:
+        x_label = f"Footing Width, B ({length_unit})"
+
+    if design_framework == "ASD":
+        y_label = f"Net Allowable Bearing Pressure ({pressure_unit})"
+    else:
+        y_label = f"Net Factored Bearing Resistance ({pressure_unit})"
+
+    return x_label, y_label
+
+
+def plot_results(results_df, footing_shape: str, design_framework: str, unit_system: str):
+    x_col, y_col = get_plot_columns(results_df, footing_shape, unit_system)
+    x_label, y_label = get_axis_labels(footing_shape, design_framework, unit_system)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(results_df[x_col], results_df[y_col], marker="o")
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_title("Bearing Capacity vs Footing Size")
+    ax.grid(True)
+
+    return fig
 
 def get_static_geometry_image() -> str | None:
     image_path = Path("assets/foundation_geometry.png")
@@ -165,7 +208,13 @@ if run_analysis:
 
                 st.subheader("Terzaghi Strip Footing Results")
                 st.dataframe(results_df, use_container_width=True)
-                st.info("This step displays the Terzaghi strip-footing results table only. Plotting will be added next.")
+                fig = plot_results(
+                    results_df=results_df,
+                    footing_shape=footing_shape,
+                    design_framework=design_framework,
+                    unit_system=unit_system,
+                )
+                st.pyplot(fig)                
 
             elif footing_shape == "Square":
                 widths = build_width_array(b_min, b_max, b_inc)
@@ -183,7 +232,13 @@ if run_analysis:
 
                 st.subheader("Terzaghi Square Footing Results")
                 st.dataframe(results_df, use_container_width=True)
-                st.info("This step displays the Terzaghi square-footing results table only. Plotting will be added next.")
+                fig = plot_results(
+                    results_df=results_df,
+                    footing_shape=footing_shape,
+                    design_framework=design_framework,
+                    unit_system=unit_system,
+                )
+                st.pyplot(fig)
 
             elif footing_shape == "Rectangular":
                 widths = build_width_array(b_min, b_max, b_inc)
@@ -202,7 +257,13 @@ if run_analysis:
 
                 st.subheader("Terzaghi Rectangular Footing Results")
                 st.dataframe(results_df, use_container_width=True)
-                st.info("This step displays the Terzaghi rectangular-footing results table only. Plotting will be added next.")
+                fig = plot_results(
+                results_df=results_df,
+                footing_shape=footing_shape,
+                design_framework=design_framework,
+                unit_system=unit_system,
+            )
+            st.pyplot(fig)
 
             elif footing_shape == "Circular":
                 radii = build_width_array(r_min, r_max, r_inc)
@@ -220,6 +281,12 @@ if run_analysis:
 
                 st.subheader("Terzaghi Circular Footing Results")
                 st.dataframe(results_df, use_container_width=True)
-                st.info("This step displays the Terzaghi circular-footing results table only. Plotting will be added next.")
+                fig = plot_results(
+                results_df=results_df,
+                footing_shape=footing_shape,
+                design_framework=design_framework,
+                unit_system=unit_system,
+            )
+            st.pyplot(fig)
             else:
                 st.warning("This step currently supports only the Terzaghi method.")
