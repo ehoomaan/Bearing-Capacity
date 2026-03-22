@@ -12,6 +12,7 @@ from modules.terzaghi import (
     calculate_terzaghi_rectangular_results,
     calculate_terzaghi_square_results,
     calculate_terzaghi_strip_results,
+    calculate_terzaghi_circular_results,
 )
 from modules.validation import validate_inputs
 
