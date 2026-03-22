@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 import streamlit as st
 
@@ -10,7 +11,12 @@ from modules.soil_profile import (
 from modules.terzaghi import calculate_terzaghi_strip_results
 from modules.validation import validate_inputs
 
-
+def get_static_geometry_image() -> str | None:
+    image_path = Path("assets/foundation_geometry.png")
+    if image_path.exists():
+        return str(image_path)
+    return None
+    
 st.set_page_config(page_title="Bearing Capacity App", layout="wide")
 
 st.title("Bearing Capacity App")
@@ -48,7 +54,12 @@ with main_col1:
         cleaned_soil_df = clean_soil_df(soil_editor_df, unit_system)
 
     st.markdown("**Geometry Sketch**")
-    st.info("Reserved area for footing geometry image.")
+    
+    image_path = get_static_geometry_image()
+    if image_path:
+        st.image(image_path, use_container_width=True)
+    else:
+    st.info("Geometry image not found.")
 
 with main_col2:
     right_col1, right_col2 = st.columns([1.0, 1.05])
