@@ -8,7 +8,7 @@ def validate_inputs(
     b_min: float | None,
     b_max: float | None,
     b_inc: float | None,
-    length_l: float | None,
+    length_to_width_ratio: float | None,
     r_min: float | None,
     r_max: float | None,
     r_inc: float | None,
@@ -35,7 +35,7 @@ def validate_inputs(
         if phi_r_value is None or phi_r_value <= 0:
             errors.append("Resistance factor must be greater than zero for LRFD.")
 
-    if footing_shape in ["Strip", "Rectangular"]:
+    if footing_shape in ["Strip", "Square", "Rectangular"]:
         if b_min is None or b_max is None or b_inc is None:
             errors.append("Width range inputs are required.")
         else:
@@ -45,10 +45,8 @@ def validate_inputs(
                 errors.append("B_max must be greater than or equal to B_min.")
 
     if footing_shape == "Rectangular":
-        if length_l is None or length_l <= 0:
-            errors.append("Length L must be greater than zero for rectangular footing.")
-        elif b_max is not None and length_l < b_max:
-            errors.append("For rectangular footing, L should be greater than or equal to the largest B value.")
+        if length_to_width_ratio is None or length_to_width_ratio <= 1.0:
+            errors.append("For rectangular footing, L/B ratio must be greater than 1.0.")
 
     if footing_shape == "Circular":
         if r_min is None or r_max is None or r_inc is None:
