@@ -9,11 +9,17 @@ from modules.soil_profile import (
     default_soil_df,
 )
 
+from modules.hansen import (
+    calculate_hansen_circular_results,
+    calculate_hansen_rectangular_results,
+    calculate_hansen_square_results,
+    calculate_hansen_strip_results,
+)
 from modules.terzaghi import (
+    calculate_terzaghi_circular_results,
     calculate_terzaghi_rectangular_results,
     calculate_terzaghi_square_results,
     calculate_terzaghi_strip_results,
-    calculate_terzaghi_circular_results,
 )
 from modules.validation import validate_inputs
 def get_plot_columns(results_df, footing_shape: str, unit_system: str) -> tuple[str, str]:
@@ -193,6 +199,9 @@ if run_analysis:
     else:
         st.success("Input collection is working correctly.")
 
+        results_df = None
+        result_title = None
+
         if selected_methods == ["Terzaghi"]:
             if footing_shape == "Strip":
                 widths = build_width_array(b_min, b_max, b_inc)
@@ -207,18 +216,7 @@ if run_analysis:
                     phi_r_value=phi_r_value,
                     unit_system=unit_system,
                 )
-
-                st.subheader("Terzaghi Strip Footing Results")
-                st.dataframe(results_df, use_container_width=True)
-                fig = plot_results(
-                    results_df=results_df,
-                    footing_shape=footing_shape,
-                    design_framework=design_framework,
-                    unit_system=unit_system,
-                )
-                plot_col1, plot_col2, plot_col3 = st.columns([1, 1.5, 1])
-                with plot_col2:
-                    st.pyplot(fig)                
+                result_title = "Terzaghi Strip Footing Results"
 
             elif footing_shape == "Square":
                 widths = build_width_array(b_min, b_max, b_inc)
@@ -233,18 +231,7 @@ if run_analysis:
                     phi_r_value=phi_r_value,
                     unit_system=unit_system,
                 )
-
-                st.subheader("Terzaghi Square Footing Results")
-                st.dataframe(results_df, use_container_width=True)
-                fig = plot_results(
-                    results_df=results_df,
-                    footing_shape=footing_shape,
-                    design_framework=design_framework,
-                    unit_system=unit_system,
-                )
-                plot_col1, plot_col2, plot_col3 = st.columns([1, 1.5, 1])
-                with plot_col2:
-                    st.pyplot(fig)
+                result_title = "Terzaghi Square Footing Results"
 
             elif footing_shape == "Rectangular":
                 widths = build_width_array(b_min, b_max, b_inc)
@@ -260,18 +247,7 @@ if run_analysis:
                     phi_r_value=phi_r_value,
                     unit_system=unit_system,
                 )
-
-                st.subheader("Terzaghi Rectangular Footing Results")
-                st.dataframe(results_df, use_container_width=True)
-                fig = plot_results(
-                    results_df=results_df,
-                    footing_shape=footing_shape,
-                    design_framework=design_framework,
-                        unit_system=unit_system,
-                )
-                plot_col1, plot_col2, plot_col3 = st.columns([1, 1.5, 1])
-                with plot_col2:
-                    st.pyplot(fig)
+                result_title = "Terzaghi Rectangular Footing Results"
 
             elif footing_shape == "Circular":
                 radii = build_width_array(r_min, r_max, r_inc)
@@ -286,17 +262,94 @@ if run_analysis:
                     phi_r_value=phi_r_value,
                     unit_system=unit_system,
                 )
+                result_title = "Terzaghi Circular Footing Results"
 
-                st.subheader("Terzaghi Circular Footing Results")
-                st.dataframe(results_df, use_container_width=True)
-                fig = plot_results(
-                    results_df=results_df,
-                    footing_shape=footing_shape,
+        elif selected_methods == ["Hansen"]:
+            if footing_shape == "Strip":
+                widths = build_width_array(b_min, b_max, b_inc)
+                results_df = calculate_hansen_strip_results(
+                    soil_df=cleaned_soil_df,
+                    widths=widths,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
                     design_framework=design_framework,
-                        unit_system=unit_system,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                    base_angle=base_angle,
+                    ground_angle=ground_angle,
                 )
-                plot_col1, plot_col2, plot_col3 = st.columns([1, 1.5, 1])
-                with plot_col2:
-                    st.pyplot(fig)
+                result_title = "Hansen Strip Footing Results"
+
+            elif footing_shape == "Square":
+                widths = build_width_array(b_min, b_max, b_inc)
+                results_df = calculate_hansen_square_results(
+                    soil_df=cleaned_soil_df,
+                    widths=widths,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
+                    design_framework=design_framework,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                    base_angle=base_angle,
+                    ground_angle=ground_angle,
+                )
+                result_title = "Hansen Square Footing Results"
+
+            elif footing_shape == "Rectangular":
+                widths = build_width_array(b_min, b_max, b_inc)
+                results_df = calculate_hansen_rectangular_results(
+                    soil_df=cleaned_soil_df,
+                    widths=widths,
+                    length_to_width_ratio=length_to_width_ratio,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
+                    design_framework=design_framework,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                    base_angle=base_angle,
+                    ground_angle=ground_angle,
+                )
+                result_title = "Hansen Rectangular Footing Results"
+
+            elif footing_shape == "Circular":
+                radii = build_width_array(r_min, r_max, r_inc)
+                results_df = calculate_hansen_circular_results(
+                    soil_df=cleaned_soil_df,
+                    radii=radii,
+                    df_depth=df_depth,
+                    groundwater_depth=groundwater_depth,
+                    wedge_method=wedge_method,
+                    design_framework=design_framework,
+                    fs_value=fs_value,
+                    phi_r_value=phi_r_value,
+                    unit_system=unit_system,
+                    base_angle=base_angle,
+                    ground_angle=ground_angle,
+                )
+                result_title = "Hansen Circular Footing Results"
+
+        else:
+            st.warning("This step currently supports one selected method at a time: Terzaghi or Hansen.")
+
+        if results_df is not None:
+            st.subheader(result_title)
+            st.dataframe(results_df, use_container_width=True)
+
+            fig = plot_results(
+                results_df=results_df,
+                footing_shape=footing_shape,
+                design_framework=design_framework,
+                unit_system=unit_system,
+            )
+
+            plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
+            with plot_col2:
+                st.pyplot(fig)
             else:
                 st.warning("This step currently supports only the Terzaghi method.")
