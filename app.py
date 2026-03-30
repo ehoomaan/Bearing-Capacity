@@ -351,5 +351,3 @@ if run_analysis:
             plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
             with plot_col2:
                 st.pyplot(fig)
-        else:
-            st.warning("This step currently supports only the Terzaghi method.")
