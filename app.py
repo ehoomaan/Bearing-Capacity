@@ -131,8 +131,12 @@ def build_summary_results_table(results_df, footing_shape: str, unit_system: str
             summary_df.at[idx, "Method"] = ""
         else:
             prev_method = current_method
-
+    
+    numeric_cols = summary_df.select_dtypes(include=["number"]).columns
+    summary_df[numeric_cols] = summary_df[numeric_cols].round(2)
+    
     return summary_df
+    
 st.set_page_config(page_title="Bearing Capacity App", layout="wide")
 
 st.title("Bearing Capacity App")
