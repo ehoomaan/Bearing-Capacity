@@ -271,7 +271,7 @@ if run_analysis:
                 )
                 result_title = "Terzaghi Circular Footing Results"
 
-        elif selected_methods == ["Hansen"]:
+    elif selected_methods == ["Hansen"]:
             if footing_shape == "Strip":
                 widths = build_width_array(b_min, b_max, b_inc)
                 results_df = calculate_hansen_strip_results(
