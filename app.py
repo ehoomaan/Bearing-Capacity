@@ -209,7 +209,7 @@ if run_analysis:
         results_df = None
         result_title = None
 
-        if selected_methods == ["Terzaghi"]:
+    if selected_methods == ["Terzaghi"]:
             if footing_shape == "Strip":
                 widths = build_width_array(b_min, b_max, b_inc)
                 results_df = calculate_terzaghi_strip_results(
@@ -340,8 +340,9 @@ if run_analysis:
                     ground_angle=ground_angle,
                 )
                 result_title = "Hansen Circular Footing Results"
+            
         elif method_name == "Vesic":
-                if footing_shape == "Strip":
+            if footing_shape == "Strip":
                     widths = build_width_array(b_min, b_max, b_inc)
                     method_df = calculate_vesic_strip_results(
                         soil_df=cleaned_soil_df,
@@ -357,7 +358,7 @@ if run_analysis:
                         ground_angle=ground_angle,
                     )
 
-                elif footing_shape == "Square":
+            elif footing_shape == "Square":
                     widths = build_width_array(b_min, b_max, b_inc)
                     method_df = calculate_vesic_square_results(
                         soil_df=cleaned_soil_df,
