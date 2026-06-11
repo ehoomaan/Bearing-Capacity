@@ -21,6 +21,13 @@ from modules.terzaghi import (
     calculate_terzaghi_square_results,
     calculate_terzaghi_strip_results,
 )
+
+from modules.vesic import (
+    calculate_vesic_circular_results,
+    calculate_vesic_rectangular_results,
+    calculate_vesic_square_results,
+    calculate_vesic_strip_results,
+)
 from modules.validation import validate_inputs
 def get_plot_columns(results_df, footing_shape: str, unit_system: str) -> tuple[str, str]:
     length_unit = "m" if unit_system == "SI" else "ft"
@@ -333,9 +340,74 @@ if run_analysis:
                     ground_angle=ground_angle,
                 )
                 result_title = "Hansen Circular Footing Results"
+        elif method_name == "Vesic":
+                if footing_shape == "Strip":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_vesic_strip_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+                elif footing_shape == "Square":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_vesic_square_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+                elif footing_shape == "Rectangular":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_vesic_rectangular_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        length_to_width_ratio=length_to_width_ratio,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+                elif footing_shape == "Circular":
+                    radii = build_width_array(r_min, r_max, r_inc)
+                    method_df = calculate_vesic_circular_results(
+                        soil_df=cleaned_soil_df,
+                        radii=radii,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
 
         else:
-            st.warning("This step currently supports one selected method at a time: Terzaghi or Hansen.")
+            st.warning("This step currently supports one selected method at a time: Terzaghi, Hansen or Vesic.")
 
         if results_df is not None:
             st.subheader(result_title)
