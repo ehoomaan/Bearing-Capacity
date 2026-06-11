@@ -132,8 +132,14 @@ def build_summary_results_table(results_df, footing_shape: str, unit_system: str
         else:
             prev_method = current_method
     
-    numeric_cols = summary_df.select_dtypes(include=["number"]).columns
-    summary_df[numeric_cols] = summary_df[numeric_cols].round(0)
+    round_map = {}
+    for col in summary_df.columns:
+        if col.startswith("B (") or col.startswith("L (") or col.startswith("R (") or col == "L/B":
+            round_map[col] = 2
+        elif "q_net_ult" in col or "q_design" in col:
+            round_map[col] = 1
+    
+    summary_df = summary_df.round(round_map)
     
     return summary_df
     
