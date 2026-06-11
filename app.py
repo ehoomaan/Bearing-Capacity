@@ -1,6 +1,8 @@
 from datetime import date
 from pathlib import Path
+
 import matplotlib.pyplot as plt
+import pandas as pd
 import streamlit as st
 
 from modules.soil_profile import (
@@ -8,7 +10,6 @@ from modules.soil_profile import (
     clean_soil_df,
     default_soil_df,
 )
-
 from modules.hansen import (
     calculate_hansen_circular_results,
     calculate_hansen_rectangular_results,
@@ -21,7 +22,6 @@ from modules.terzaghi import (
     calculate_terzaghi_square_results,
     calculate_terzaghi_strip_results,
 )
-
 from modules.vesic import (
     calculate_vesic_circular_results,
     calculate_vesic_rectangular_results,
@@ -29,6 +29,8 @@ from modules.vesic import (
     calculate_vesic_strip_results,
 )
 from modules.validation import validate_inputs
+
+
 def get_plot_columns(results_df, footing_shape: str, unit_system: str) -> tuple[str, str]:
     length_unit = "m" if unit_system == "SI" else "ft"
     pressure_unit = "kPa" if unit_system == "SI" else "psf"
@@ -64,15 +66,21 @@ def plot_results(results_df, footing_shape: str, design_framework: str, unit_sys
     x_label, y_label = get_axis_labels(footing_shape, design_framework, unit_system)
 
     fig, ax = plt.subplots(figsize=(5, 4))
-    ax.plot(results_df[x_col], results_df[y_col], marker="o")
-    ax.set_xlabel(x_label,fontsize=10)
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
-    ax.set_ylabel(y_label,fontsize=10)
-    ax.set_title("Bearing Capacity vs Footing Size",fontsize=10,fontweight='bold')
+
+    for method_name, group_df in results_df.groupby("Method"):
+        group_df = group_df.sort_values(by=x_col)
+        ax.plot(group_df[x_col], group_df[y_col], marker="o", label=method_name)
+
+    ax.set_xlabel(x_label, fontsize=10)
+    ax.set_ylabel(y_label, fontsize=10)
+    ax.tick_params(axis="x", labelsize=8)
+    ax.tick_params(axis="y", labelsize=8)
+    ax.set_title("Bearing Capacity vs Footing Size", fontsize=10, fontweight="bold")
     ax.grid(True)
+    ax.legend(fontsize=8)
 
     return fig
+
 
 def get_static_geometry_image() -> str | None:
     image_path = Path("assets/foundation_geometry.png")
@@ -206,146 +214,210 @@ if run_analysis:
     else:
         st.success("Input collection is working correctly.")
 
-        results_df = None
-        result_title = None
+        results_list = []
 
-    if selected_methods == ["Terzaghi"]:
-            if footing_shape == "Strip":
-                widths = build_width_array(b_min, b_max, b_inc)
-                results_df = calculate_terzaghi_strip_results(
-                    soil_df=cleaned_soil_df,
-                    widths=widths,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                )
-                result_title = "Terzaghi Strip Footing Results"
+        for method_name in selected_methods:
+            method_df = None
 
-            elif footing_shape == "Square":
-                widths = build_width_array(b_min, b_max, b_inc)
-                results_df = calculate_terzaghi_square_results(
-                    soil_df=cleaned_soil_df,
-                    widths=widths,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                )
-                result_title = "Terzaghi Square Footing Results"
+            if method_name == "Terzaghi":
+                if footing_shape == "Strip":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_terzaghi_strip_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                    )
 
-            elif footing_shape == "Rectangular":
-                widths = build_width_array(b_min, b_max, b_inc)
-                results_df = calculate_terzaghi_rectangular_results(
-                    soil_df=cleaned_soil_df,
-                    widths=widths,
-                    length_to_width_ratio=length_to_width_ratio,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                )
-                result_title = "Terzaghi Rectangular Footing Results"
+                elif footing_shape == "Square":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_terzaghi_square_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                    )
 
-            elif footing_shape == "Circular":
-                radii = build_width_array(r_min, r_max, r_inc)
-                results_df = calculate_terzaghi_circular_results(
-                    soil_df=cleaned_soil_df,
-                    radii=radii,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                )
-                result_title = "Terzaghi Circular Footing Results"
+                elif footing_shape == "Rectangular":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_terzaghi_rectangular_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        length_to_width_ratio=length_to_width_ratio,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                    )
 
-    elif selected_methods == ["Hansen"]:
-            if footing_shape == "Strip":
-                widths = build_width_array(b_min, b_max, b_inc)
-                results_df = calculate_hansen_strip_results(
-                    soil_df=cleaned_soil_df,
-                    widths=widths,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                    base_angle=base_angle,
-                    ground_angle=ground_angle,
-                )
-                result_title = "Hansen Strip Footing Results"
+                elif footing_shape == "Circular":
+                    radii = build_width_array(r_min, r_max, r_inc)
+                    method_df = calculate_terzaghi_circular_results(
+                        soil_df=cleaned_soil_df,
+                        radii=radii,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                    )
 
-            elif footing_shape == "Square":
-                widths = build_width_array(b_min, b_max, b_inc)
-                results_df = calculate_hansen_square_results(
-                    soil_df=cleaned_soil_df,
-                    widths=widths,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                    base_angle=base_angle,
-                    ground_angle=ground_angle,
-                )
-                result_title = "Hansen Square Footing Results"
+            elif method_name == "Hansen":
+                if footing_shape == "Strip":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_hansen_strip_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
 
-            elif footing_shape == "Rectangular":
-                widths = build_width_array(b_min, b_max, b_inc)
-                results_df = calculate_hansen_rectangular_results(
-                    soil_df=cleaned_soil_df,
-                    widths=widths,
-                    length_to_width_ratio=length_to_width_ratio,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                    base_angle=base_angle,
-                    ground_angle=ground_angle,
-                )
-                result_title = "Hansen Rectangular Footing Results"
+                elif footing_shape == "Square":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_hansen_square_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
 
-            elif footing_shape == "Circular":
-                radii = build_width_array(r_min, r_max, r_inc)
-                results_df = calculate_hansen_circular_results(
-                    soil_df=cleaned_soil_df,
-                    radii=radii,
-                    df_depth=df_depth,
-                    groundwater_depth=groundwater_depth,
-                    wedge_method=wedge_method,
-                    design_framework=design_framework,
-                    fs_value=fs_value,
-                    phi_r_value=phi_r_value,
-                    unit_system=unit_system,
-                    base_angle=base_angle,
-                    ground_angle=ground_angle,
-                )
-                result_title = "Hansen Circular Footing Results"
+                elif footing_shape == "Rectangular":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_hansen_rectangular_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        length_to_width_ratio=length_to_width_ratio,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
 
+                elif footing_shape == "Circular":
+                    radii = build_width_array(r_min, r_max, r_inc)
+                    method_df = calculate_hansen_circular_results(
+                        soil_df=cleaned_soil_df,
+                        radii=radii,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+            elif method_name == "Vesic":
+                if footing_shape == "Strip":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_vesic_strip_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+                elif footing_shape == "Square":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_vesic_square_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+                elif footing_shape == "Rectangular":
+                    widths = build_width_array(b_min, b_max, b_inc)
+                    method_df = calculate_vesic_rectangular_results(
+                        soil_df=cleaned_soil_df,
+                        widths=widths,
+                        length_to_width_ratio=length_to_width_ratio,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+                elif footing_shape == "Circular":
+                    radii = build_width_array(r_min, r_max, r_inc)
+                    method_df = calculate_vesic_circular_results(
+                        soil_df=cleaned_soil_df,
+                        radii=radii,
+                        df_depth=df_depth,
+                        groundwater_depth=groundwater_depth,
+                        wedge_method=wedge_method,
+                        design_framework=design_framework,
+                        fs_value=fs_value,
+                        phi_r_value=phi_r_value,
+                        unit_system=unit_system,
+                        base_angle=base_angle,
+                        ground_angle=ground_angle,
+                    )
+
+            if method_df is not None:
+                results_list.append(method_df)
+
+        if len(results_list) == 0:
+            st.warning("No calculation method is currently connected for this selection.")
         else:
-            st.warning("This step currently supports one selected method at a time: Terzaghi, Hansen or Vesic.")
+            results_df = pd.concat(results_list, ignore_index=True)
 
-        if results_df is not None:
-            st.subheader(result_title)
+            st.subheader("Bearing Capacity Results")
             st.dataframe(results_df, use_container_width=True)
 
             fig = plot_results(
