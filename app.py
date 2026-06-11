@@ -97,18 +97,15 @@ def build_summary_results_table(results_df, footing_shape: str, unit_system: str
         summary_df = results_df[
             [
                 "Method",
-                "Footing Shape",
                 size_col,
                 f"q_net_ult ({pressure_unit})",
                 f"q_design ({pressure_unit})",
             ]
         ].copy()
-        summary_df = summary_df.rename(columns={size_col: f"R ({length_unit})"})
     else:
         size_col = f"B ({length_unit})"
         summary_cols = [
             "Method",
-            "Footing Shape",
             size_col,
             f"q_net_ult ({pressure_unit})",
             f"q_design ({pressure_unit})",
@@ -117,15 +114,25 @@ def build_summary_results_table(results_df, footing_shape: str, unit_system: str
         if footing_shape in ["Square", "Rectangular"]:
             l_col = f"L ({length_unit})"
             if l_col in results_df.columns:
-                summary_cols.insert(3, l_col)
+                summary_cols.insert(2, l_col)
 
         if footing_shape == "Rectangular" and "L/B" in results_df.columns:
-            summary_cols.insert(4, "L/B")
+            insert_at = 3 if f"L ({length_unit})" in summary_cols else 2
+            summary_cols.insert(insert_at, "L/B")
 
         summary_df = results_df[summary_cols].copy()
 
-    return summary_df
+    summary_df = summary_df.sort_values(by=["Method", size_col]).reset_index(drop=True)
 
+    prev_method = None
+    for idx in summary_df.index:
+        current_method = summary_df.at[idx, "Method"]
+        if current_method == prev_method:
+            summary_df.at[idx, "Method"] = ""
+        else:
+            prev_method = current_method
+
+    return summary_df
 st.set_page_config(page_title="Bearing Capacity App", layout="wide")
 
 st.title("Bearing Capacity App")
