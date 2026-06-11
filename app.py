@@ -88,6 +88,43 @@ def get_static_geometry_image() -> str | None:
         return str(image_path)
     return None
 
+def build_summary_results_table(results_df, footing_shape: str, unit_system: str) -> pd.DataFrame:
+    length_unit = "m" if unit_system == "SI" else "ft"
+    pressure_unit = "kPa" if unit_system == "SI" else "psf"
+
+    if footing_shape == "Circular":
+        size_col = f"R ({length_unit})"
+        summary_df = results_df[
+            [
+                "Method",
+                "Footing Shape",
+                size_col,
+                f"q_net_ult ({pressure_unit})",
+                f"q_design ({pressure_unit})",
+            ]
+        ].copy()
+        summary_df = summary_df.rename(columns={size_col: f"R ({length_unit})"})
+    else:
+        size_col = f"B ({length_unit})"
+        summary_cols = [
+            "Method",
+            "Footing Shape",
+            size_col,
+            f"q_net_ult ({pressure_unit})",
+            f"q_design ({pressure_unit})",
+        ]
+
+        if footing_shape in ["Square", "Rectangular"]:
+            l_col = f"L ({length_unit})"
+            if l_col in results_df.columns:
+                summary_cols.insert(3, l_col)
+
+        if footing_shape == "Rectangular" and "L/B" in results_df.columns:
+            summary_cols.insert(4, "L/B")
+
+        summary_df = results_df[summary_cols].copy()
+
+    return summary_df
 
 st.set_page_config(page_title="Bearing Capacity App", layout="wide")
 
@@ -418,15 +455,25 @@ if run_analysis:
             results_df = pd.concat(results_list, ignore_index=True)
 
             st.subheader("Bearing Capacity Results")
-            st.dataframe(results_df, use_container_width=True)
-
+            
+            summary_df = build_summary_results_table(
+                results_df=results_df,
+                footing_shape=footing_shape,
+                unit_system=unit_system,
+            )
+            
+            st.dataframe(summary_df, use_container_width=True)
+            
             fig = plot_results(
                 results_df=results_df,
                 footing_shape=footing_shape,
                 design_framework=design_framework,
                 unit_system=unit_system,
             )
-
+            
             plot_col1, plot_col2, plot_col3 = st.columns([1, 2, 1])
             with plot_col2:
                 st.pyplot(fig)
+            
+            with st.expander("Detailed calculation table", expanded=False):
+                st.dataframe(results_df, use_container_width=True)
