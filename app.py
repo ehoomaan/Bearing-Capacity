@@ -133,7 +133,7 @@ def build_summary_results_table(results_df, footing_shape: str, unit_system: str
             prev_method = current_method
     
     numeric_cols = summary_df.select_dtypes(include=["number"]).columns
-    summary_df[numeric_cols] = summary_df[numeric_cols].round(2)
+    summary_df[numeric_cols] = summary_df[numeric_cols].round(0)
     
     return summary_df
     
